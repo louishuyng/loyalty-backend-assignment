@@ -1,0 +1,7 @@
+# Development
+DATABASE_USER: postgres
+DATABASE_PASSWORD: password
+DATABASE_HOST: localhost
+
+# Production
+RAILS_MASTER_KEY: abcxyz

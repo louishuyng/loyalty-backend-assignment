@@ -1,0 +1,21 @@
+version: "3.9"
+services:
+  db:
+    image: postgres
+    volumes:
+      - ./tmp/db:/var/lib/postgresql/data
+    environment:
+      POSTGRES_PASSWORD: password
+  plan:
+    build: .
+    volumes:
+      - .:/app
+    ports:
+      - "9080:9080"
+    environment:
+      DATABASE_PASSWORD: password
+      DATABASE_USER: postgres
+      DATABASE_HOST: db
+    platform: linux/x86_64
+    depends_on:
+      - db

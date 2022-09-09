@@ -1,0 +1,59 @@
+[
+  {
+    "name": "Diet Category",
+    "subcategories_attributes": [
+      {
+        "name": "Keto"
+      },
+      {
+        "name": "Vegan"
+      },
+      {
+        "name": "Vegetarian"
+      },
+      {
+        "name": "Eat-clean"
+      },
+      {
+        "name": "Paleo"
+      }
+    ]
+  },
+  {
+    "name": "Diet Goal",
+    "subcategories_attributes": [
+      {
+        "name": "Gain weight"
+      },
+      {
+        "name": "Lose weight"
+      },
+      {
+        "name": "Build muscle"
+      },
+      {
+        "name": "Reduce allergic reaction"
+      }
+    ]
+  },
+  {
+    "name": "Diet Restriction",
+    "subcategories_attributes": [
+      {
+        "name": "Egg"
+      },
+      {
+        "name": "Peanut"
+      },
+      {
+        "name": "Gluten"
+      },
+      {
+        "name": "Beef"
+      },
+      {
+        "name": "Pork"
+      }
+    ]
+  }
+]

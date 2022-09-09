@@ -1,0 +1,67 @@
+name: CI
+
+on: [pull_request]
+
+jobs:
+  rubocop:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: ruby/setup-ruby@v1
+        with:
+          bundler-cache: true # runs 'bundle install' and caches installed gems automatically
+      # required to compile pg ruby gem
+      - name: Run rubocop
+        run: bundle exec rubocop
+
+  rspec:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:11
+        env:
+          POSTGRES_USER: rails_github_actions
+          POSTGRES_DB: rails_github_actions_test
+          POSTGRES_PASSWORD: postgres
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+      # if you need redis
+      # redis:
+      #   image: redis
+      #   ports:
+      #   - 6379:6379
+      #   options: --entrypoint redis-server
+    steps:
+      - uses: actions/checkout@v3
+      - name: Set up Ruby
+        uses: actions/setup-ruby@v1
+        with:
+          ruby-version: 3.1.x
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get -yqq install libpq-dev build-essential libcurl4-openssl-dev
+          gem install bundler
+          bundle install --jobs 4 --retry 3
+
+      - name: Setup test database
+        env:
+          RAILS_ENV: test
+          DATABASE_HOST: localhost
+          DATABASE_USER: rails_github_actions
+          DATABASE_PASSWORD: postgres
+        run: |
+          rake db:create db:migrate
+
+      - name: Run tests
+        env:
+          RAILS_ENV: test
+          DATABASE_HOST: localhost
+          DATABASE_USER: rails_github_actions
+          DATABASE_PASSWORD: postgres
+        run: rspec
