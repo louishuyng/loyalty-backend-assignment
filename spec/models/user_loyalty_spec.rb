@@ -78,6 +78,14 @@ RSpec.describe UserLoyalty do
             subject
           end.to change(user_loyalty, :accumulate_point).from(accumulate_point).to(2.5)
         end
+
+        it 'record user point history' do
+          subject
+
+          expect(UserPointHistory.count).to eq(1)
+
+          expect(user_loyalty.user.point_histories.first.point).to eq(3 * UserLoyalty::STANDARD_POINT)
+        end
       end
     end
   end
