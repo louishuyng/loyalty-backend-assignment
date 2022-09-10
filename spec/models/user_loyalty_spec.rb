@@ -76,7 +76,7 @@ RSpec.describe UserLoyalty do
         it 'should keep the remain record on accumulate_point' do
           expect do
             subject
-          end.to change(user_loyalty, :accumulate_point).from(accumulate_point).to(2)
+          end.to change(user_loyalty, :accumulate_point).from(accumulate_point).to(2.0)
         end
       end
     end
