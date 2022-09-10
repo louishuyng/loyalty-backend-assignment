@@ -17,7 +17,7 @@ RSpec.describe User do
   end
 
   describe 'callback' do
-    context 'after_create' do
+    describe 'after_create' do
       let(:user) { build(:user) }
 
       subject { user.save }

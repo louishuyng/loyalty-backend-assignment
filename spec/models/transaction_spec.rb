@@ -34,7 +34,7 @@ RSpec.describe Transaction do
   end
 
   describe 'callback' do
-    context 'after_create' do
+    describe 'after_create' do
       let(:user) { create(:user) }
       let(:product) { create(:product) }
 
