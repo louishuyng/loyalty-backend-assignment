@@ -26,6 +26,7 @@ help: |
   `docs`:     Adds or alters documentation.
   `style`:    Improves formatting, white-space.
   `refactor`: Rewrites code without feature, performance or bug changes.
+  `arch`:     Update or change database schema / architecture modules
   `perf`:     Improves performance.
   `test`:     Adds or modifies tests.
   `revert`:   Changes that reverting other changes
