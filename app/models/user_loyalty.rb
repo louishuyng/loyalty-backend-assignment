@@ -1,4 +1,7 @@
 class UserLoyalty < ApplicationRecord
+  ################################ CONSTANTS ################################
+  STANDARD_POINT = 10
+
   ################################ ASSOCIATIONS ################################
   belongs_to :user
 
@@ -12,5 +15,5 @@ class UserLoyalty < ApplicationRecord
   )
 
   ################################ VALIDATION ################################
-  validates :tier, :accumulate_point, presence: true
+  validates :tier, :current_point, :accumulate_point, presence: true
 end

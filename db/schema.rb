@@ -47,6 +47,7 @@ ActiveRecord::Schema[7.0].define(version: 2022_09_09_161835) do
 
   create_table "user_loyalties", force: :cascade do |t|
     t.bigint "user_id", null: false
+    t.integer "current_point", default: 0, null: false
     t.integer "accumulate_point", default: 0, null: false
     t.string "tier", default: "standard", null: false
     t.datetime "created_at", null: false

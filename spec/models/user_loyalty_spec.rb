@@ -19,6 +19,7 @@ RSpec.describe UserLoyalty do
 
   describe 'validations' do
     it { is_expected.to validate_presence_of(:tier) }
+    it { is_expected.to validate_presence_of(:current_point) }
     it { is_expected.to validate_presence_of(:accumulate_point) }
   end
 end
