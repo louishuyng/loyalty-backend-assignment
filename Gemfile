@@ -93,3 +93,5 @@ group :test do
 end
 
 gem "marginalia", "~> 1.11"
+
+gem "jsonb_accessor", "~> 1.3"
