@@ -8,6 +8,9 @@ class User < ApplicationRecord
 
   has_one :loyalty, class_name: 'UserLoyalty', foreign_key: :user_id, inverse_of: :user, dependent: :destroy
 
+  ################################ CALLBACK ################################
+  after_create :create_loyalty
+
   ################################ VALIDATION ################################
   # TODO: Implement JWT and Hashing password
   validates :user_name, :password, presence: true

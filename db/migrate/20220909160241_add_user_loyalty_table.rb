@@ -6,7 +6,7 @@ class AddUserLoyaltyTable < ActiveRecord::Migration[7.0]
 
       # NOTE: it will be reset and added to current point after reach standard point
       # we can save it on redis to keep a state. However, need to consider move to redis based on number of user
-      t.integer :accumulate_point, null: false, default: 0
+      t.decimal :accumulate_point, null: false, default: 0
 
       t.string :tier, null: false, default: 'standard'
 

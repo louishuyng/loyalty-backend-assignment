@@ -15,4 +15,18 @@ RSpec.describe User do
     it { is_expected.to validate_presence_of(:user_name) }
     it { is_expected.to validate_presence_of(:password) }
   end
+
+  describe 'callback' do
+    context 'after_create' do
+      let(:user) { build(:user) }
+
+      subject { user.save }
+
+      it 'create loyalty after create user' do
+        subject
+
+        expect(user.loyalty).not_to be_nil
+      end
+    end
+  end
 end
