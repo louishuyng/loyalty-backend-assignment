@@ -1,5 +1,4 @@
 FactoryBot.define do
   factory :user_reward do
-    usage_amount { FFaker::Number.number(digits: 1) }
   end
 end
