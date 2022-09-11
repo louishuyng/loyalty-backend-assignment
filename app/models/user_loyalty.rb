@@ -27,7 +27,7 @@ class UserLoyalty < ApplicationRecord
     event :tier_up_gold do
       transitions from: :standard, to: :gold do
         guard do
-          point_match_with_tier?(:gold)
+          UserLoyalty.point_match_with_tier?(current_point, :gold)
         end
       end
     end
@@ -35,7 +35,7 @@ class UserLoyalty < ApplicationRecord
     event :tier_up_platinum do
       transitions from: %i[standard gold], to: :platinum do
         guard do
-          point_match_with_tier?(:platinum)
+          UserLoyalty.point_match_with_tier?(current_point, :platinum)
         end
       end
     end
@@ -55,6 +55,22 @@ class UserLoyalty < ApplicationRecord
       find_each(batch_size: 100) do |user_loyalty|
         user_loyalty.update_columns(current_point: 0)
       end
+    end
+
+    def reset_tier
+      find_each(batch_size: 100) do |user_loyalty|
+        total_point_cycle_one = UserPointHistory.total_point_in_cycle(user_loyalty.user, 1)
+        total_point_cycle_two = UserPointHistory.total_point_in_cycle(user_loyalty.user, 2)
+
+        point_to_set_tier = [total_point_cycle_one, total_point_cycle_two].max
+
+        user_loyalty.update_columns(tier: :gold) if point_match_with_tier?(point_to_set_tier, :gold)
+        user_loyalty.update_columns(tier: :platinum) if point_match_with_tier?(point_to_set_tier, :platinum)
+      end
+    end
+
+    def point_match_with_tier?(point, tier)
+      point >= "#{name}::MIN_#{tier.upcase}_POINT".constantize
     end
   end
 
@@ -82,14 +98,10 @@ class UserLoyalty < ApplicationRecord
     if tier_platinum?
       nil
     elsif tier_standard?
-      tier_up_gold! if point_match_with_tier?(:gold)
+      tier_up_gold! if UserLoyalty.point_match_with_tier?(current_point, :gold)
     elsif tier_gold?
-      tier_up_platinum! if point_match_with_tier?(:platinum)
+      tier_up_platinum! if UserLoyalty.point_match_with_tier?(current_point, :platinum)
     end
-  end
-
-  def point_match_with_tier?(tier)
-    current_point >= "#{self.class.name}::MIN_#{tier.upcase}_POINT".constantize
   end
 
   def record_user_point_history(point)

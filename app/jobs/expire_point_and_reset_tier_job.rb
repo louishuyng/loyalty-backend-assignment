@@ -3,7 +3,6 @@ class ExpirePointAndResetTierJob < ApplicationJob
 
   def perform
     UserLoyalty.reset_point
-
-    # TODO: reset tier for all user
+    UserLoyalty.reset_tier
   end
 end

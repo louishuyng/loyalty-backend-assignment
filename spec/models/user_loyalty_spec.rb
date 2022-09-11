@@ -49,6 +49,12 @@ RSpec.describe UserLoyalty do
     let(:current_point) { 20 }
 
     let(:user) { create(:user) }
+
+    # fake users for testing reset point and tiers
+    let(:user_one) { create(:user) }
+    let(:user_two) { create(:user) }
+    let(:user_three) { create(:user) }
+
     let(:user_loyalty) { create(:user_loyalty, current_point:, accumulate_point:, user:) }
 
     context '#receive_point' do
@@ -111,9 +117,9 @@ RSpec.describe UserLoyalty do
     end
 
     context '#reset_point' do
-      let!(:user_loyalty_one) { create(:user_loyalty, current_point: 100, user:) }
-      let!(:user_loyalty_two) { create(:user_loyalty, current_point: 200, user:) }
-      let!(:user_loyalty_three) { create(:user_loyalty, current_point: 300, user:) }
+      let!(:user_loyalty_one) { create(:user_loyalty, current_point: 100, user: user_one) }
+      let!(:user_loyalty_two) { create(:user_loyalty, current_point: 200, user: user_two) }
+      let!(:user_loyalty_three) { create(:user_loyalty, current_point: 300, user: user_three) }
 
       it 'should reset all user_loyalty current point to 0' do
         described_class.reset_point
@@ -121,6 +127,56 @@ RSpec.describe UserLoyalty do
         expect(user_loyalty_one.reload.current_point.zero?).to be_truthy
         expect(user_loyalty_two.reload.current_point.zero?).to be_truthy
         expect(user_loyalty_three.reload.current_point.zero?).to be_truthy
+      end
+    end
+
+    context '#reset_tier' do
+      let!(:user_loyalty_one) { create(:user_loyalty, user: user_one) }
+      let!(:user_loyalty_two) { create(:user_loyalty, user: user_two) }
+      let!(:user_loyalty_three) { create(:user_loyalty, user: user_three) }
+
+      before do
+        cycle_one_created_at = Time.now - 1.years
+        cycle_two_created_at = Time.now - 2.years
+        cycle_three_created_at = Time.now - 3.years
+
+        # user one point histories
+        # last 3 cycle
+        user_one.point_histories.create(point: 3000, created_at: cycle_three_created_at)
+        user_one.point_histories.create(point: 2000, created_at: cycle_three_created_at)
+
+        # last 2 cycle
+        user_one.point_histories.create(point: 500, created_at: cycle_two_created_at)
+        user_one.point_histories.create(point: 300, created_at: cycle_two_created_at)
+        user_one.point_histories.create(point: 200, created_at: cycle_two_created_at)
+
+        # last 1 cycle
+        user_one.point_histories.create(point: 300, created_at: cycle_one_created_at)
+        user_one.point_histories.create(point: 300, created_at: cycle_one_created_at)
+
+        # user two point histories
+        # last 2 cycle
+        user_two.point_histories.create(point: 500, created_at: cycle_two_created_at)
+        user_two.point_histories.create(point: 300, created_at: cycle_two_created_at)
+        user_two.point_histories.create(point: 200, created_at: cycle_two_created_at)
+
+        # last 1 cycle
+        user_two.point_histories.create(point: 3000, created_at: cycle_one_created_at)
+        user_two.point_histories.create(point: 2000, created_at: cycle_one_created_at)
+
+        # user three point histories
+        # last 1 cycle
+        user_three.point_histories.create(point: 100, created_at: cycle_one_created_at)
+        user_three.point_histories.create(point: 300, created_at: cycle_one_created_at)
+        user_three.point_histories.create(point: 300, created_at: cycle_one_created_at)
+      end
+
+      it 'should reset tier for all user' do
+        described_class.reset_tier
+
+        expect(user_loyalty_one.reload.tier_gold?).to be_truthy
+        expect(user_loyalty_two.reload.tier_platinum?).to be_truthy
+        expect(user_loyalty_three.reload.tier_standard?).to be_truthy
       end
     end
   end
