@@ -98,3 +98,5 @@ gem "marginalia", "~> 1.11"
 gem "jsonb_accessor", "~> 1.3"
 
 gem "sidekiq", "~> 6.5"
+
+gem 'sidekiq-cron', '~> 1.1'

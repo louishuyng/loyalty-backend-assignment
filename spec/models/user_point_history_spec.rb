@@ -68,4 +68,27 @@ RSpec.describe UserPointHistory do
       end
     end
   end
+
+  describe 'methods' do
+    context '#total_point_in_cycle' do
+      let(:user) { create(:user) }
+
+      before do
+        user.point_histories.create(point: 200)
+
+        user.point_histories.create(point: 300, created_at: Time.now - 1.year)
+        user.point_histories.create(point: 500, created_at: Time.now - 1.year)
+
+        user.point_histories.create(point: 2000, created_at: Time.now - 2.year)
+        user.point_histories.create(point: 1000, created_at: Time.now - 2.year)
+        user.point_histories.create(point: 300, created_at: Time.now - 2.year)
+      end
+
+      it 'return correct total point in each cycle' do
+        expect(described_class.total_point_in_cycle(user, 1)).to eq(800)
+        expect(described_class.total_point_in_cycle(user, 2)).to eq(3300)
+        expect(described_class.total_point_in_cycle(user)).to eq(200)
+      end
+    end
+  end
 end
