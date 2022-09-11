@@ -3,4 +3,7 @@ Rails.application.routes.draw do
 
   # Defines the root path route ("/")
   # root "articles#index"
+
+  # TODO: only allow admin to access this page
+  mount Sidekiq::Web => '/sidekiq'
 end
