@@ -10,6 +10,8 @@
 
 - Create `config/application.yml` by copying from `config/application.yml.example` and make any change appropriate to your setup.
 
+---
+
 ### Setup Git hooks:
 
 ```bash
@@ -17,39 +19,53 @@ pnpm install
 pnpm run prepare
 ```
 
+---
+
 ### Installation
 
-Inside project root folder, execute:
+#### 1. Install gem dependencies
 
 ```
-$ bundle
+$ bundle install
 ```
 
-Database creation:
+#### 2. Setup Database
 
 ```
-$ rake db:setup
+$ rake db:setup && rake db:migrate
 ```
 
-Run migrations:
+#### 3. Run database seeding
+
+> It will generate initial data
+>
+> - 3 basic rewards
 
 ```
-$ rake db:migrate
+$ bundle exec rake db:seed
 ```
 
-### Run Rubocop
+---
+
+### Running Project
+
+#### Start Dev GRPC Server
 
 ```
-$ bundle exec ubocop
+$ bundle exec gruf
 ```
 
-or
+---
+
+### Lint & Testing
+
+#### Check Lint
 
 ```
-$ rubocop
+$ bundle exec rubocop
 ```
 
-### Run Rspec
+#### Run Unit Test
 
 ```
 $ bundle exec rspec

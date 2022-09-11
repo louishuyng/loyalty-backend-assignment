@@ -17,15 +17,52 @@ RSpec.describe User do
   end
 
   describe 'callback' do
-    context 'after_create' do
-      let(:user) { build(:user) }
+    describe 'after_create' do
+      let(:birthday) { Time.now }
+      let(:user) { build(:user, birthday:) }
 
       subject { user.save }
 
-      it 'create loyalty after create user' do
-        subject
+      context '#create_loyalty' do
+        it 'create loyalty after create user' do
+          subject
 
-        expect(user.loyalty).not_to be_nil
+          expect(user.loyalty).not_to be_nil
+        end
+      end
+
+      context '#issue_birthday_reward_later' do
+        ActiveJob::Base.queue_adapter = :test
+
+        context 'when birthday is over in this year' do
+          let(:birthday) { Time.now - 2.months }
+
+          it 'enqueued a job in a next year' do
+            expect do
+              subject
+            end.to enqueue_job(BirthdayIssueRewardJob)\
+              .at(user.birthday.at_beginning_of_month.next_year).with(user.id)
+          end
+        end
+
+        context 'when birthday is in currenth month' do
+          it 'enqueued a job now' do
+            expect do
+              subject
+            end.to enqueue_job(BirthdayIssueRewardJob).with(user.id)
+          end
+        end
+
+        context 'when birthday is not coming in this year' do
+          let(:birthday) { Time.now + 1.month }
+
+          it 'enqueued a job in the beginning of next coming months' do
+            expect do
+              subject
+            end.to enqueue_job(BirthdayIssueRewardJob)\
+              .at(user.birthday.at_beginning_of_month).with(user.id)
+          end
+        end
       end
     end
   end

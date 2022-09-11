@@ -13,6 +13,7 @@ rules:
       - docs
       - style
       - refactor
+      - arch
       - perf
       - test
       - revert

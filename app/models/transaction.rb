@@ -7,6 +7,8 @@ class Transaction < ApplicationRecord
   belongs_to :record, polymorphic: true
 
   ################################## SETTINGS ##################################
+  include TransactionRewardable
+
   enum(
     status: {
       pending: 'pending',

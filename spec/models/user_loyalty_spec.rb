@@ -62,7 +62,7 @@ RSpec.describe UserLoyalty do
       end
 
       context 'after process then accumulate_point bigger than standard point' do
-        let(:point) { limit_point_to_reach_standard + 2 }
+        let(:point) { limit_point_to_reach_standard + 2.5 + (2 * UserLoyalty::STANDARD_POINT) }
 
         it 'should add standard point to current_point' do
           expect do
@@ -70,13 +70,21 @@ RSpec.describe UserLoyalty do
           end.to change(
             user_loyalty,
             :current_point
-          ).from(current_point).to(current_point + UserLoyalty::STANDARD_POINT)
+          ).from(current_point).to(current_point + (3 * UserLoyalty::STANDARD_POINT))
         end
 
         it 'should keep the remain record on accumulate_point' do
           expect do
             subject
-          end.to change(user_loyalty, :accumulate_point).from(accumulate_point).to(2.0)
+          end.to change(user_loyalty, :accumulate_point).from(accumulate_point).to(2.5)
+        end
+
+        it 'record user point history' do
+          subject
+
+          expect(UserPointHistory.count).to eq(1)
+
+          expect(user_loyalty.user.point_histories.first.point).to eq(3 * UserLoyalty::STANDARD_POINT)
         end
       end
     end

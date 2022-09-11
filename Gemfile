@@ -90,6 +90,11 @@ group :test do
   gem 'selenium-webdriver'
   gem 'webdrivers'
   gem 'gruf-rspec'
+  gem "rspec-sidekiq", "~> 3.1"
 end
 
 gem "marginalia", "~> 1.11"
+
+gem "jsonb_accessor", "~> 1.3"
+
+gem "sidekiq", "~> 6.5"

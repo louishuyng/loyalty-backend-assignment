@@ -34,7 +34,7 @@ RSpec.describe Transaction do
   end
 
   describe 'callback' do
-    context 'after_create' do
+    describe 'after_create' do
       let(:user) { create(:user) }
       let(:product) { create(:product) }
 
@@ -42,12 +42,61 @@ RSpec.describe Transaction do
 
       before do
         allow_any_instance_of(Transaction).to receive(:update_user_loyalty).and_return(nil)
+        allow_any_instance_of(Transaction).to receive(:issue_five_percentage_cash_rebate_reward).and_return(nil)
       end
 
-      it 'call update_user_loyalty once' do
-        expect_any_instance_of(Transaction).to receive(:update_user_loyalty).once
+      context '#update_user_loyalty' do
+        it 'call update_user_loyalty once' do
+          expect_any_instance_of(Transaction).to receive(:update_user_loyalty).once
 
-        transaction.save
+          transaction.save
+        end
+      end
+
+      context '#issue_five_percentage_cash_rebate_reward' do
+        context 'when user issued bash rebate reward' do
+          before do
+            user.issued_five_percentage_cash_rebate = true
+            user.save
+          end
+
+          it 'should not issue cash rebate reward' do
+            expect_any_instance_of(Transaction).not_to receive(:issue_five_percentage_cash_rebate_reward)
+
+            transaction.save
+          end
+        end
+
+        context 'when user did not issue bash rebate reward' do
+          it 'should issue cash rebate reward' do
+            expect_any_instance_of(Transaction).to receive(:issue_five_percentage_cash_rebate_reward).once
+
+            transaction.save
+          end
+        end
+      end
+
+      context '#issued_free_movie_ticket' do
+        context 'when user issued free movie ticket' do
+          before do
+            user.issued_free_movie_ticket = true
+            user.save
+          end
+
+          it 'should not issue free movie ticket' do
+            expect_any_instance_of(Transaction).not_to receive(:issue_free_movie_ticket)
+
+            transaction.save
+          end
+        end
+
+        context 'when user did not issue free movie ticket' do
+          it 'should issue free movie ticket' do
+            expect_any_instance_of(Transaction).to receive(:issue_free_movie_ticket).once
+
+            transaction.save
+          end
+        end
       end
     end
   end
@@ -56,13 +105,16 @@ RSpec.describe Transaction do
     let(:user) { create(:user) }
     let(:product) { create(:product) }
 
-    let(:fee) { 10 }
     let(:currency) { Transaction.currencies[:sgd] }
 
+    let(:fee) { 0 } # NOTE: fee is 0 not determined yet in business logic but need it to  avoid flaky spec
     let(:transaction) { create(:transaction, user:, record: product, fee:, currency:) }
 
     before do
       allow(user.loyalty).to receive(:receive_point).and_return(nil)
+      user.issued_free_movie_ticket = true
+      user.issued_five_percentage_cash_rebate = true
+      user.save
     end
 
     context '#update_user_loyalty' do
@@ -83,6 +135,119 @@ RSpec.describe Transaction do
           expect(user.loyalty).to receive(:receive_point).with(UserLoyalty::STANDARD_POINT * 2)
 
           subject
+        end
+      end
+    end
+
+    context '#issue_five_percentage_cash_rebate_reward' do
+      before do
+        user.issued_five_percentage_cash_rebate = true
+        user.save
+      end
+
+      subject { transaction.send(:issue_five_percentage_cash_rebate_reward) }
+
+      context 'with number transactions have amount gt 100 less than 10' do
+        before do
+          10.times do
+            create(:transaction, user:, record: product, fee: 100, currency:)
+          end
+        end
+
+        it 'should not issue a new reward' do
+          expect do
+            subject
+          end.not_to change(user.user_rewards, :count)
+        end
+      end
+
+      context 'with number transactions have amount gt 100 less than 10' do
+        before do
+          10.times do
+            create(:transaction, user:, record: product, fee: 110, currency:)
+          end
+        end
+
+        it 'should issue a new reward' do
+          expect do
+            subject
+          end.to change(user.user_rewards, :count).by(1)
+        end
+
+        it 'should issue cash rebate reward and update user reward meta' do
+          subject
+
+          expect(user.rewards.last.name).to eq('5_percentage_cash_rebate')
+          expect(user.issued_five_percentage_cash_rebate).to be_truthy
+        end
+      end
+    end
+
+    context '#issue_free_movie_ticket' do
+      before do
+        user.issued_free_movie_ticket = true
+        user.save
+      end
+
+      subject { transaction.send(:issue_free_movie_ticket) }
+
+      context 'with user spent fee more than 1000 but more than 60 days' do
+        before do
+          # first record
+          create(:transaction, user:, record: product, fee: 300, currency:)
+
+          # in 60 days
+          create(:transaction, user:, record: product, fee: 200, currency:, created_at: Time.now + 50.days)
+          create(:transaction, user:, record: product, fee: 200, currency:, created_at: Time.now + 59.days)
+
+          # not in 60 days
+          create(:transaction, user:, record: product, fee: 400, currency:, created_at: Time.now + 60.days)
+        end
+
+        it 'should not issue a new reward' do
+          expect do
+            subject
+          end.not_to change(user.user_rewards, :count)
+        end
+      end
+
+      context 'with user spent fee less than 1000 within 60 days' do
+        before do
+          # first record
+          create(:transaction, user:, record: product, fee: 300, currency:)
+
+          # in 60 days
+          create(:transaction, user:, record: product, fee: 600, currency:, created_at: Time.now + 50.days)
+        end
+
+        it 'should not issue a new reward' do
+          expect do
+            subject
+          end.not_to change(user.user_rewards, :count)
+        end
+      end
+
+      context 'with user spent fee more than 1000 within 60 days' do
+        before do
+          # first record
+          create(:transaction, user:, record: product, fee: 300, currency:)
+
+          # in 60 days
+          create(:transaction, user:, record: product, fee: 200, currency:, created_at: Time.now + 50.days)
+          create(:transaction, user:, record: product, fee: 600, currency:, created_at: Time.now + 59.days)
+        end
+
+        it 'should issue a new reward' do
+          expect do
+            subject
+          end.to change(user.user_rewards, :count).by(1)
+        end
+
+        it 'should issue cash rebate reward and update user reward meta' do
+          subject
+
+          expect(user.rewards.last.name).to eq('free_movie_ticket')
+          expect(user.issued_free_movie_ticket).to be_truthy
         end
       end
     end
