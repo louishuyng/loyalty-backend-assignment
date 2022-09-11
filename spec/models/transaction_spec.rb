@@ -251,5 +251,36 @@ RSpec.describe Transaction do
         end
       end
     end
+
+    context '#total_fee_in_quarter' do
+      let(:user) { create(:user) }
+
+      before do
+        # 1st quarter
+        user.transactions.create(fee: 200, created_at: "1/1/#{Time.now.year}", record: product)
+        user.transactions.create(fee: 500, created_at: "8/2/#{Time.now.year}", record: product)
+        user.transactions.create(fee: 600, created_at: "15/3/#{Time.now.year}", record: product)
+
+        # 2nd quarter
+        user.transactions.create(fee: 3000, created_at: "18/4/#{Time.now.year}", record: product)
+        user.transactions.create(fee: 200, created_at: "22/5/#{Time.now.year}", record: product)
+        user.transactions.create(fee: 600, created_at: "25/6/#{Time.now.year}", record: product)
+
+        # 3rd quarter
+        user.transactions.create(fee: 1000, created_at: "9/7/#{Time.now.year}", record: product)
+        user.transactions.create(fee: 2000, created_at: "20/9/#{Time.now.year}", record: product)
+
+        # 4th quarter
+        user.transactions.create(fee: 100, created_at: "5/10/#{Time.now.year}", record: product)
+        user.transactions.create(fee: 200, created_at: "2/12/#{Time.now.year}", record: product)
+      end
+
+      it 'return correct total fee in each quarter' do
+        expect(described_class.total_fee_in_quarter(user, 1)).to eq(1300)
+        expect(described_class.total_fee_in_quarter(user, 2)).to eq(3800)
+        expect(described_class.total_fee_in_quarter(user, 3)).to eq(3000)
+        expect(described_class.total_fee_in_quarter(user, 4)).to eq(300)
+      end
+    end
   end
 end

@@ -21,9 +21,13 @@ Sidekiq::Web.app_url = '/'
 # --- Sidekiq cron ---
 # Test here: https://crontab.guru/
 hash = {
-  'Expire point every year and calculated tier for all users' => {
+  'Expire point every year and calculated tier for all user' => {
     'class' => 'ExpirePointAndResetTierJob',
     'cron' => '0 0 1 1 *', # Run every year
+  },
+  'Process give bonus points for all user every quarter ' => {
+    'class' => 'QuarterRewardBonusPointJob',
+    'cron' => '0 0 1 */3 *', # Run every quarter
   },
 }.freeze
 

@@ -80,7 +80,6 @@ RSpec.describe UserLoyalty do
 
     let(:user) { create(:user) }
 
-    # fake users for testing reset point and tiers
     let(:user_one) { create(:user) }
     let(:user_two) { create(:user) }
     let(:user_three) { create(:user) }
@@ -207,6 +206,38 @@ RSpec.describe UserLoyalty do
         expect(user_loyalty_one.reload.tier_gold?).to be_truthy
         expect(user_loyalty_two.reload.tier_platinum?).to be_truthy
         expect(user_loyalty_three.reload.tier_standard?).to be_truthy
+      end
+    end
+
+    context '#process_quarterly_reward' do
+      let(:product) { create(:product) }
+
+      subject { described_class.process_quarterly_reward }
+
+      before do
+        # user one spent 1500 in current quarter and 100 in another quarter
+        user_one.transactions.create(fee: 500, record: product)
+        user_one.transactions.create(fee: 1000, record: product)
+        user_one.transactions.create(fee: 1000, created_at: Time.now + 3.months, record: product)
+
+        # user two spent 2100 in current quarter
+        user_two.transactions.create(fee: 1100, record: product)
+        user_two.transactions.create(fee: 1000, record: product)
+      end
+
+      it 'should not give 100 bonus points to user spent greater than 2000 in current quarter' do
+        subject
+
+        # NOTE: add this to avoid flaky spec since every transaction create user can get standard point
+        old_point = user_one.loyalty.current_point
+        expect(user_one.loyalty.reload.current_point).to eq(old_point)
+      end
+
+      it 'should give 100 bonus points to user spent greater than 2000 in current quarter' do
+        subject
+
+        old_point = user_two.loyalty.current_point
+        expect(user_two.loyalty.reload.current_point).to eq(old_point + 100)
       end
     end
   end

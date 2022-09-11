@@ -2,6 +2,13 @@ class Transaction < ApplicationRecord
   ################################ CONSTANT ################################
   FEE_TO_ACHIVE_STANDARD_POINT = 100
 
+  ################################ SCOPE ################################
+  scope :in_quarter, -> (user, quarter) {
+    selected_period = Date.new(Time.now.year.to_i, 3 * quarter.to_i - 2).all_quarter
+
+    where(created_at: selected_period, user:)
+  }
+
   ################################ ASSOCIATIONS ################################
   belongs_to :user
   belongs_to :record, polymorphic: true
@@ -37,6 +44,12 @@ class Transaction < ApplicationRecord
   validates :fee, :status, :currency, presence: true
 
   ################################ METHODS ################################
+  class << self
+    def total_fee_in_quarter(user, quarter)
+      in_quarter(user, quarter).sum(:fee)
+    end
+  end
+
   def update_user_loyalty
     unless local_currency?
       user.loyalty.receive_point(UserLoyalty::STANDARD_POINT * 2)
