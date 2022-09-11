@@ -12,5 +12,7 @@ class UserReward < ApplicationRecord
   ################################ SETTING ################################
   # NOTE: can replace one_month_issue with another data type string
   # when it is possible to have n calendar months/days requirement
-  jsonb_accessor :metadata, is_one_month_issue: :boolean
+  jsonb_accessor :metadata,
+    is_one_month_issue: :boolean,
+    is_birthday_reward: :boolean
 end
