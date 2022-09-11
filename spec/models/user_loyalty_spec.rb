@@ -13,7 +13,7 @@ RSpec.describe UserLoyalty do
         platinum: 'platinum',
       }
 
-      expect(subject).to define_enum_for(:tier).with_values(values).backed_by_column_of_type(:string)
+      expect(subject).to define_enum_for(:tier).with_values(values).backed_by_column_of_type(:string).with_prefix
     end
   end
 
@@ -21,6 +21,27 @@ RSpec.describe UserLoyalty do
     it { is_expected.to validate_presence_of(:tier) }
     it { is_expected.to validate_presence_of(:current_point) }
     it { is_expected.to validate_presence_of(:accumulate_point) }
+  end
+
+  describe 'callback' do
+    describe 'after_create' do
+      let(:user) { create(:user) }
+      let(:user_loyalty) { create(:user_loyalty, current_point: 0, user:) }
+
+      context '#up_tier_process' do
+        it 'should update the tier to gold when matching point' do
+          user_loyalty.update(current_point: 2000)
+
+          expect(user_loyalty.reload.tier).to eq(UserLoyalty.tiers[:gold])
+        end
+
+        it 'should update the tier to platinum when matching point' do
+          user_loyalty.update(current_point: 6000)
+
+          expect(user_loyalty.reload.tier).to eq(UserLoyalty.tiers[:platinum])
+        end
+      end
+    end
   end
 
   describe 'methods' do
