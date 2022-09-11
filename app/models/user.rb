@@ -17,7 +17,8 @@ class User < ApplicationRecord
   ################################ SETTING ################################
   jsonb_accessor :reward_metadata,
     issued_five_percentage_cash_rebate: :boolean,
-    issued_free_movie_ticket: :boolean
+    issued_free_movie_ticket: :boolean,
+    issued_gold_reward: :boolean
 
   ################################ VALIDATION ################################
   # TODO: Implement JWT and Hashing password

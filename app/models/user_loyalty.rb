@@ -9,7 +9,9 @@ class UserLoyalty < ApplicationRecord
   belongs_to :user
 
   ################################## SETTINGS ##################################
+  include LoyaltyRewardable
   include AASM
+
   enum(
     tier: {
       standard: 'standard',
@@ -24,7 +26,7 @@ class UserLoyalty < ApplicationRecord
     state :standard, initial: true
     state :gold, :platinum
 
-    event :tier_up_gold do
+    event :tier_up_gold, after: :issue_gold_reward do
       transitions from: :standard, to: :gold do
         guard do
           UserLoyalty.point_match_with_tier?(current_point, :gold)

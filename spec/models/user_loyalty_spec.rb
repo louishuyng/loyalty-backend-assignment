@@ -29,10 +29,40 @@ RSpec.describe UserLoyalty do
       let(:user_loyalty) { create(:user_loyalty, current_point: 0, user:) }
 
       context '#up_tier_process' do
-        it 'should update the tier to gold when matching point' do
-          user_loyalty.update(current_point: 2000)
+        context 'up_to_gold_tier' do
+          subject {  user_loyalty.update(current_point: 2000) }
+          it 'should update the tier to gold when matching point' do
+            subject
 
-          expect(user_loyalty.reload.tier).to eq(UserLoyalty.tiers[:gold])
+            expect(user_loyalty.reload.tier).to eq(UserLoyalty.tiers[:gold])
+          end
+
+          context 'user got gold reward' do
+            before do
+              user.issued_gold_reward = true
+              user.save
+            end
+
+            it 'should not receive airport_lounge_access' do
+              expect do
+                subject
+              end.not_to change(user.user_rewards, :count)
+            end
+          end
+
+          context 'user did not get gold reward' do
+            it 'should receive 4x airport_lounge_access' do
+              expect do
+                subject
+              end.to change(user.user_rewards, :count).by(1)
+
+              subject
+
+              expect(user.rewards.last.name).to eq('airport_lounge_access')
+              expect(user.user_rewards.last.usage_amount).to eq(4)
+              expect(user.issued_gold_reward).to be_truthy
+            end
+          end
         end
 
         it 'should update the tier to platinum when matching point' do
