@@ -21,6 +21,10 @@ Sidekiq::Web.app_url = '/'
 # --- Sidekiq cron ---
 # Test here: https://crontab.guru/
 hash = {
+  'Expire point every year and calculated tier for all users' => {
+    'class' => 'ExpirePointAndResetTierJob',
+    'cron' => '0 0 1 1 *', # Run every year
+  },
 }.freeze
 
 # Load scheduled jobs unless in test environment

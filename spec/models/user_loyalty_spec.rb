@@ -109,5 +109,19 @@ RSpec.describe UserLoyalty do
         end
       end
     end
+
+    context '#reset_point' do
+      let!(:user_loyalty_one) { create(:user_loyalty, current_point: 100, user:) }
+      let!(:user_loyalty_two) { create(:user_loyalty, current_point: 200, user:) }
+      let!(:user_loyalty_three) { create(:user_loyalty, current_point: 300, user:) }
+
+      it 'should reset all user_loyalty current point to 0' do
+        described_class.reset_point
+
+        expect(user_loyalty_one.reload.current_point.zero?).to be_truthy
+        expect(user_loyalty_two.reload.current_point.zero?).to be_truthy
+        expect(user_loyalty_three.reload.current_point.zero?).to be_truthy
+      end
+    end
   end
 end

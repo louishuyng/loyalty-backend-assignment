@@ -50,6 +50,14 @@ class UserLoyalty < ApplicationRecord
   validates :tier, :current_point, :accumulate_point, presence: true
 
   ################################ METHODS ################################
+  class << self
+    def reset_point
+      find_each(batch_size: 100) do |user_loyalty|
+        user_loyalty.update_columns(current_point: 0)
+      end
+    end
+  end
+
   def receive_point(point)
     future_point = accumulate_point + point
     added_point = 0
