@@ -95,3 +95,5 @@ end
 gem "marginalia", "~> 1.11"
 
 gem "jsonb_accessor", "~> 1.3"
+
+gem "sidekiq", "~> 6.5"
