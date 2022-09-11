@@ -1,5 +1,7 @@
 # Loyalty Backend Assignment
 
+#### [Database Diagram](https://github.com/louishuyng/loyalty-backend-assignment/wiki/ERD)
+
 ## Requirements
 
 - Rails 7.0.3
