@@ -1,4 +1,4 @@
-module Rewardable
+module PointRewardable
   extend ActiveSupport::Concern
 
   included do

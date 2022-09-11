@@ -8,7 +8,7 @@ class UserPointHistory < ApplicationRecord
                      }
 
   ################################ SETTINGS ################################
-  include Rewardable
+  include PointRewardable
 
   ################################ VALIDATION ################################
   validates :point, presence: true

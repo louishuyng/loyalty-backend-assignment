@@ -42,12 +42,38 @@ RSpec.describe Transaction do
 
       before do
         allow_any_instance_of(Transaction).to receive(:update_user_loyalty).and_return(nil)
+        allow_any_instance_of(Transaction).to receive(:issue_five_percentage_cash_rebate_reward).and_return(nil)
       end
 
-      it 'call update_user_loyalty once' do
-        expect_any_instance_of(Transaction).to receive(:update_user_loyalty).once
+      context '#update_user_loyalty' do
+        it 'call update_user_loyalty once' do
+          expect_any_instance_of(Transaction).to receive(:update_user_loyalty).once
 
-        transaction.save
+          transaction.save
+        end
+      end
+
+      context '#issue_five_percentage_cash_rebate_reward' do
+        context 'when user issued bash rebate reward' do
+          before do
+            user.issued_five_percentage_cash_rebate = true
+            user.save
+          end
+
+          it 'should not issue cash rebate reward' do
+            expect_any_instance_of(Transaction).not_to receive(:issue_five_percentage_cash_rebate_reward)
+
+            transaction.save
+          end
+        end
+
+        context 'when user did not issue bash rebate reward' do
+          it 'should issue cash rebate reward' do
+            expect_any_instance_of(Transaction).to receive(:issue_five_percentage_cash_rebate_reward).once
+
+            transaction.save
+          end
+        end
       end
     end
   end
@@ -83,6 +109,45 @@ RSpec.describe Transaction do
           expect(user.loyalty).to receive(:receive_point).with(UserLoyalty::STANDARD_POINT * 2)
 
           subject
+        end
+      end
+    end
+
+    context '#issue_five_percentage_cash_rebate_reward' do
+      subject { transaction.send(:issue_five_percentage_cash_rebate_reward) }
+
+      context 'with number transactions have amoun gt 100 less than 10' do
+        before do
+          10.times do
+            create(:transaction, user:, record: product, fee: 100, currency:)
+          end
+        end
+
+        it 'should not issue a new reward' do
+          expect do
+            subject
+          end.not_to change(user.user_rewards, :count)
+        end
+      end
+
+      context 'with number transactions have amoun gt 100 less than 10' do
+        before do
+          10.times do
+            create(:transaction, user:, record: product, fee: 110, currency:)
+          end
+        end
+
+        it 'should issue a new reward' do
+          expect do
+            subject
+          end.to change(user.user_rewards, :count).by(1)
+        end
+
+        it 'should issue cash rebate reward and update user reward meta' do
+          subject
+
+          expect(user.rewards.last.name).to eq('5_percentage_cash_rebate')
+          expect(user.issued_five_percentage_cash_rebate).to be_truthy
         end
       end
     end

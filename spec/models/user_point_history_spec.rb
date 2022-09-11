@@ -13,7 +13,7 @@ RSpec.describe UserPointHistory do
     describe 'after_create' do
       context '#reward_in_one_calendar_month' do
         let(:user) { create(:user) }
-        let!(:reward) { create(:reward, name: 'free_coffee') }
+        let(:reward) { Reward.find_by(name: 'free_coffee') }
 
         context 'when user does not accumulates 100 points in current month' do
           before do
@@ -60,7 +60,7 @@ RSpec.describe UserPointHistory do
             it 'free coffee reward should be create with correct info' do
               subject
 
-              expect(user.user_rewards.last.reward).to eq(reward)
+              expect(user.rewards.last).to eq(reward)
               expect(user.user_rewards.last.is_one_month_issue).to be_truthy
             end
           end

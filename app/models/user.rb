@@ -14,6 +14,10 @@ class User < ApplicationRecord
     issue_birthday_reward_later
   end
 
+  ################################ SETTING ################################
+  jsonb_accessor :reward_metadata,
+    issued_five_percentage_cash_rebate: :boolean
+
   ################################ VALIDATION ################################
   # TODO: Implement JWT and Hashing password
   validates :user_name, :password, presence: true

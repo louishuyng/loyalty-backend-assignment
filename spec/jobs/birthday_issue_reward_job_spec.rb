@@ -6,7 +6,6 @@ RSpec.describe BirthdayIssueRewardJob do
       ActiveJob::Base.queue_adapter = :test
 
       let(:user) { create(:user) }
-      let!(:reward) { create(:reward, name: 'free_coffee') }
 
       it 'issue a reward for user' do
         expect do
